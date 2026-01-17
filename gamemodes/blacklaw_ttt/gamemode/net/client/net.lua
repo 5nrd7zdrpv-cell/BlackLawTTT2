@@ -10,6 +10,11 @@ BL.Net.Cache = BL.Net.Cache or {
   last_event_at = 0,
 }
 
+BL.Net.AdminCache = BL.Net.AdminCache or {
+  snapshot = nil,
+  last_snapshot_at = 0,
+}
+
 local function push_event(event)
   if type(event) ~= "table" then
     return
@@ -38,10 +43,28 @@ net.Receive(BL.Net.Messages.Event, function()
   push_event(event)
 end)
 
+net.Receive(BL.Net.Messages.AdminSnapshot, function()
+  local payload = net.ReadTable()
+  if type(payload) ~= "table" then
+    return
+  end
+
+  BL.Net.AdminCache.snapshot = payload
+  BL.Net.AdminCache.last_snapshot_at = CurTime()
+
+  if BL.AdminUI and BL.AdminUI.ApplySnapshot then
+    BL.AdminUI.ApplySnapshot(payload)
+  end
+end)
+
 function BL.Net.GetSnapshot()
   return BL.Net.Cache.snapshot
 end
 
 function BL.Net.GetEvents()
   return BL.Net.Cache.events
+end
+
+function BL.Net.GetAdminSnapshot()
+  return BL.Net.AdminCache.snapshot
 end

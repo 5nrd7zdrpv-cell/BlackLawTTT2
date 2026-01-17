@@ -456,6 +456,32 @@ function BL.RoundManager.ForceRoundEnd()
   return true
 end
 
+function BL.RoundManager.AdminRestartRound()
+  BL.RoundManager.SetPhase(PHASES.PREP)
+end
+
+function BL.RoundManager.AdminRespawn(ply, freeze)
+  if not IsValid(ply) then
+    return false
+  end
+  spawn_player(ply, freeze or false)
+  return true
+end
+
+function BL.RoundManager.AdminSetRole(ply, role_id)
+  if not IsValid(ply) then
+    return false
+  end
+  if type(role_id) ~= "number" or role_id <= 0 then
+    return false
+  end
+  set_role(ply, math.floor(role_id))
+  if is_player_alive(ply) then
+    apply_role_loadout(ply, ply.BLTTT_RoleId)
+  end
+  return true
+end
+
 local function handle_player_join(ply)
   if not IsValid(ply) then
     return

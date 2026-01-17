@@ -7,4 +7,7 @@ BL.Net.Messages = {
   ClientEvent = "blttt_client_event",
   ShopBuy = "blttt_shop_buy",
   ShopRadarPing = "blttt_shop_radar_ping",
+  AdminRequest = "blttt_admin_request",
+  AdminSnapshot = "blttt_admin_snapshot",
+  AdminAction = "blttt_admin_action",
 }
