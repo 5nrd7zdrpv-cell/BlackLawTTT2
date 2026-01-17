@@ -10,3 +10,14 @@ blt_boot_log("Core shared bootstrap loaded")
 
 GM.BLTTT = GM.BLTTT or {}
 GM.BLTTT.Version = "0.1.0"
+
+BL = BL or {}
+BL.TEAMS = BL.TEAMS or {
+  ALIVE = 1,
+  SPECTATOR = 2,
+}
+
+if team and team.SetUp then
+  team.SetUp(BL.TEAMS.ALIVE, "Alive", Color(80, 200, 255))
+  team.SetUp(BL.TEAMS.SPECTATOR, "Spectator", Color(180, 180, 180))
+end
