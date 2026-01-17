@@ -25,7 +25,7 @@ BL.Net.Receive(BL.Net.Messages.ClientEvent, { limit = 5, interval = 1 }, functio
   end
 
   if event_type == "inspect_player" then
-    if not ply:IsAdmin() then
+    if not BL.Perm or not BL.Perm.Has or not BL.Perm.Has(ply, "player.action") then
       return
     end
 
