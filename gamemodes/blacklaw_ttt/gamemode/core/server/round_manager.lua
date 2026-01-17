@@ -366,6 +366,9 @@ function BL.RoundManager.SetPhase(phase)
     if BL.RoundStats and BL.RoundStats.ResetAll then
       BL.RoundStats.ResetAll()
     end
+    if BL.Credits and BL.Credits.ResetAll then
+      BL.Credits.ResetAll()
+    end
     for _, ply in ipairs(player.GetAll()) do
       if IsValid(ply) then
         ply.BLTTT_LateJoiner = false
@@ -373,6 +376,9 @@ function BL.RoundManager.SetPhase(phase)
       end
     end
     assign_roles()
+    if BL.Credits and BL.Credits.GrantStartingCredits then
+      BL.Credits.GrantStartingCredits()
+    end
     push_event("phase_prep", { ends_at = BL.RoundManager.State.next_phase_time })
   elseif phase == PHASES.ACTIVE then
     BL.RoundManager.State.next_phase_time = CurTime() + get_int("bl_round_time", 600)

@@ -10,6 +10,7 @@ BL.HUD.State = BL.HUD.State or {
   round_id = 0,
   phase_end = nil,
   event_entries = {},
+  credits = 0,
 }
 
 local EVENT_MAX = 8
@@ -211,6 +212,12 @@ function BL.HUD.RefreshState()
         state.role_key = "UNKNOWN"
       end
 
+      if type(snapshot.credits) == "number" then
+        state.credits = math.max(0, math.floor(snapshot.credits))
+      else
+        state.credits = 0
+      end
+
       state.event_entries = {}
       local events = snapshot.event_log
       if type(events) == "table" then
@@ -387,7 +394,7 @@ function PANEL:Paint(w, h)
     end
   end
 
-  local column_w = left_width / 3
+  local column_w = left_width / 4
   local stats_top = stats_y + margin
 
   draw_label("HP", left_x + margin, stats_top)
@@ -398,6 +405,9 @@ function PANEL:Paint(w, h)
 
   draw_label("AMMO", left_x + column_w * 2 + margin, stats_top)
   draw_value(tostring(ammo), left_x + column_w * 2 + margin, stats_top + scale(18), style.Colors.Text)
+
+  draw_label("CREDITS", left_x + column_w * 3 + margin, stats_top)
+  draw_value(tostring(BL.HUD.State.credits or 0), left_x + column_w * 3 + margin, stats_top + scale(18), style.Colors.Text)
 
   draw_card(right_x, right_y, right_width, round_height)
 
