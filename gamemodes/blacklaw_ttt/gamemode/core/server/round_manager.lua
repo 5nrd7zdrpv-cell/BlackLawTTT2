@@ -8,11 +8,6 @@ local PHASES = {
   POST = "POST",
 }
 
-local DEFAULT_LOADOUT = {
-  "weapon_crowbar",
-  "weapon_pistol",
-}
-
 local ROUND_TICK = "BL.RoundManager.Tick"
 local ROUND_TICK_INTERVAL = 1
 
@@ -111,18 +106,12 @@ local function set_role_flags(ply, revealed, public)
 end
 
 local function set_role(ply, role)
-  ply.BLTTT_Role = role
-  if ply.SetNWString then
-    ply:SetNWString("blttt_role", role or "")
-  end
+  ply.BLTTT_RoleId = role or 0
   set_role_flags(ply, false, false)
 end
 
 local function clear_role(ply)
-  ply.BLTTT_Role = ""
-  if ply.SetNWString then
-    ply:SetNWString("blttt_role", "")
-  end
+  ply.BLTTT_RoleId = 0
   set_role_flags(ply, false, false)
 end
 
@@ -159,22 +148,39 @@ local function make_spectator(ply)
   ply:Freeze(false)
 end
 
+local function apply_role_loadout(ply, role_id_override)
+  if not IsValid(ply) then
+    return
+  end
+
+  local role_id = role_id_override or ply.BLTTT_RoleId or 0
+  if role_id == 0 and BL.Roles and BL.Roles.IDS then
+    role_id = BL.Roles.IDS.INNOCENT
+  end
+  local loadout = BL.Roles and BL.Roles.GetLoadout and BL.Roles.GetLoadout(role_id) or {}
+  if type(loadout) ~= "table" then
+    return
+  end
+
+  ply:StripWeapons()
+  ply:StripAmmo()
+  for _, weapon in ipairs(loadout) do
+    ply:Give(weapon)
+  end
+  ply:GiveAmmo(60, "Pistol", true)
+end
+
 local function spawn_player(ply, freeze)
   if not IsValid(ply) then
     return
   end
   ply:UnSpectate()
   ply:Spawn()
-  ply:StripWeapons()
-  ply:StripAmmo()
   set_player_alive(ply, true)
   if BL and BL.TEAMS and BL.TEAMS.ALIVE then
     ply:SetTeam(BL.TEAMS.ALIVE)
   end
-  for _, weapon in ipairs(DEFAULT_LOADOUT) do
-    ply:Give(weapon)
-  end
-  ply:GiveAmmo(60, "Pistol", true)
+  apply_role_loadout(ply, ply.BLTTT_RoleId)
   ply:Freeze(freeze or false)
 end
 
@@ -195,7 +201,8 @@ local function create_corpse_for_player(ply)
   corpse:Activate()
 
   corpse.BLTTT_VictimSteamID64 = ply:SteamID64()
-  corpse.BLTTT_VictimRole = ply.BLTTT_Role or ""
+  corpse.BLTTT_VictimRoleId = ply.BLTTT_RoleId or 0
+  corpse.BLTTT_VictimRoleKey = BL.Roles and BL.Roles.GetRoleKey and BL.Roles.GetRoleKey(corpse.BLTTT_VictimRoleId) or ""
 end
 
 local function eligible_players()
@@ -224,10 +231,11 @@ local function assign_roles()
   table.Shuffle(players)
   for index, ply in ipairs(players) do
     if index <= traitor_count then
-      set_role(ply, "traitor")
+      set_role(ply, BL.Roles.IDS.TRAITOR)
     else
-      set_role(ply, "innocent")
+      set_role(ply, BL.Roles.IDS.INNOCENT)
     end
+    apply_role_loadout(ply, ply.BLTTT_RoleId)
   end
 end
 
@@ -262,9 +270,9 @@ local function check_win_condition()
   local innocents_alive = 0
   for _, ply in ipairs(player.GetAll()) do
     if IsValid(ply) and is_player_alive(ply) and not ply.BLTTT_LateJoiner then
-      if ply.BLTTT_Role == "traitor" then
+      if ply.BLTTT_RoleId == BL.Roles.IDS.TRAITOR then
         traitors_alive = traitors_alive + 1
-      elseif ply.BLTTT_Role == "innocent" then
+      elseif ply.BLTTT_RoleId == BL.Roles.IDS.INNOCENT then
         innocents_alive = innocents_alive + 1
       end
     end
