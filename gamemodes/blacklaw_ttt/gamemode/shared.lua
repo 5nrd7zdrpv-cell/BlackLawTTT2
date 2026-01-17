@@ -24,8 +24,8 @@ end
 
 blt_boot_log("Booting shared core")
 
-blt_include_dir("blacklaw_ttt/gamemode/core/shared")
-blt_include_dir("blacklaw_ttt/gamemode/net/shared")
+blt_include_dir("core/shared")
+blt_include_dir("net/shared")
 
 if SERVER then
   blt_boot_log("Shared ready (server)")

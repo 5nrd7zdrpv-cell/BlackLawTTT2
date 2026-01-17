@@ -20,10 +20,10 @@ local function blt_include_dir(dir)
   end
 end
 
-blt_include_dir("blacklaw_ttt/gamemode/core/server")
-blt_include_dir("blacklaw_ttt/gamemode/net/server")
-blt_include_dir("blacklaw_ttt/gamemode/admin")
-blt_include_dir("blacklaw_ttt/gamemode/persistence")
-blt_include_dir("blacklaw_ttt/gamemode/workshop")
+blt_include_dir("core/server")
+blt_include_dir("net/server")
+blt_include_dir("admin")
+blt_include_dir("persistence")
+blt_include_dir("workshop")
 
 blt_boot_log("Server init complete")
