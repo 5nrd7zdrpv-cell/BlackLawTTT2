@@ -16,6 +16,28 @@ blt_safe("AddCSLuaFile shared.lua", function()
   AddCSLuaFile("shared.lua")
 end)
 
+local function blt_addcslua_dir(dir)
+  local gamemode_name = engine.ActiveGamemode and engine.ActiveGamemode() or (GM and GM.FolderName) or "blacklaw_ttt"
+  if gamemode_name == "" then
+    gamemode_name = "blacklaw_ttt"
+  end
+  local search_root = "gamemodes/" .. gamemode_name .. "/gamemode/"
+  local files, _ = file.Find(search_root .. dir .. "/*.lua", "LUA")
+  if type(files) == "table" then
+    table.sort(files)
+  end
+  for _, fileName in ipairs(files) do
+    local relative_path = dir .. "/" .. fileName
+    blt_safe("AddCSLuaFile " .. relative_path, function()
+      AddCSLuaFile(relative_path)
+    end)
+  end
+end
+
+blt_addcslua_dir("core/client")
+blt_addcslua_dir("net/client")
+blt_addcslua_dir("ui")
+
 blt_safe("include shared.lua", function()
   include("shared.lua")
 end)
@@ -37,6 +59,9 @@ local function blt_include_dir(dir)
   end
   local search_root = "gamemodes/" .. gamemode_name .. "/gamemode/"
   local files, _ = file.Find(search_root .. dir .. "/*.lua", "LUA")
+  if type(files) == "table" then
+    table.sort(files)
+  end
   for _, fileName in ipairs(files) do
     local relative_path = dir .. "/" .. fileName
     blt_safe("include " .. relative_path, function()
