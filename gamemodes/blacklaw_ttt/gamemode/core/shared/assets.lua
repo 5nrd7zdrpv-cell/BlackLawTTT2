@@ -29,7 +29,7 @@ local function log_missing_asset(kind, name)
   local message = string.format("Missing %s asset: %s", kind, label)
 
   if GM and GM.BLTTT_BootLog then
-    GM:BLTTT_BootLog(message)
+    GM.BLTTT_BootLog(message)
   else
     MsgC(Color(255, 120, 120), "[BLACKLAW_TTT] ", color_white, message .. "\n")
   end
