@@ -506,11 +506,24 @@ function BL.HUD.Create()
   if IsValid(BL.HUD.Panel) then
     return
   end
-  BL.HUD.Panel = vgui.Create("BLHUD")
+  BL.HUD.Panel = vgui.Create("BLHUD", vgui.GetWorldPanel())
+  if IsValid(BL.HUD.Panel) then
+    BL.HUD.Panel:SetVisible(true)
+  end
+end
+
+function BL.HUD.Ensure()
+  if not IsValid(BL.HUD.Panel) then
+    BL.HUD.Create()
+  end
 end
 
 hook.Add("InitPostEntity", "BL.HUD.Create", function()
   BL.HUD.Create()
+end)
+
+hook.Add("HUDPaint", "BL.HUD.Ensure", function()
+  BL.HUD.Ensure()
 end)
 
 hook.Add("HUDShouldDraw", "BL.HUD.HideDefault", function(name)
