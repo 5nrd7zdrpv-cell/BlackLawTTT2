@@ -1,0 +1,8 @@
+"Gamemode"
+{
+  "name" "Blacklaw TTT"
+  "author" "blacklaw_ttt"
+  "email" ""
+  "website" ""
+  "base" "sandbox"
+}
