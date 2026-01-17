@@ -4,11 +4,27 @@ GM.Author = "blacklaw_ttt"
 GM.Email = ""
 GM.Website = ""
 
+local side_label = SERVER and "SERVER" or "CLIENT"
+print("[BLACKLAW_TTT] shared.lua loaded (" .. side_label .. ")")
+
+local function blt_safe(name, fn)
+  local ok, err = xpcall(fn, debug.traceback)
+  if not ok then
+    print("[BLACKLAW_TTT][ERROR] " .. name)
+    print(err)
+  end
+  return ok, err
+end
+
 local function blt_include(path)
   if SERVER then
-    AddCSLuaFile(path)
+    blt_safe("AddCSLuaFile " .. path, function()
+      AddCSLuaFile(path)
+    end)
   end
-  include(path)
+  blt_safe("include " .. path, function()
+    include(path)
+  end)
 end
 
 local function blt_include_dir(dir)

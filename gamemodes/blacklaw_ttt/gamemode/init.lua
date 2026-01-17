@@ -1,7 +1,24 @@
-AddCSLuaFile("cl_init.lua")
-AddCSLuaFile("shared.lua")
+print("[BLACKLAW_TTT] init.lua loaded (SERVER)")
 
-include("shared.lua")
+local function blt_safe(name, fn)
+  local ok, err = xpcall(fn, debug.traceback)
+  if not ok then
+    print("[BLACKLAW_TTT][ERROR] " .. name)
+    print(err)
+  end
+  return ok, err
+end
+
+blt_safe("AddCSLuaFile cl_init.lua", function()
+  AddCSLuaFile("cl_init.lua")
+end)
+blt_safe("AddCSLuaFile shared.lua", function()
+  AddCSLuaFile("shared.lua")
+end)
+
+blt_safe("include shared.lua", function()
+  include("shared.lua")
+end)
 
 local function blt_boot_log(message)
   if GM and GM.BLTTT_BootLog then
@@ -21,7 +38,10 @@ local function blt_include_dir(dir)
   local search_root = "gamemodes/" .. gamemode_name .. "/gamemode/"
   local files, _ = file.Find(search_root .. dir .. "/*.lua", "LUA")
   for _, fileName in ipairs(files) do
-    include(dir .. "/" .. fileName)
+    local relative_path = dir .. "/" .. fileName
+    blt_safe("include " .. relative_path, function()
+      include(relative_path)
+    end)
   end
 end
 
