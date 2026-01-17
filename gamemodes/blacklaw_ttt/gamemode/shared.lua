@@ -3,9 +3,9 @@ GM.Name = "Blacklaw TTT"
 GM.Author = "blacklaw_ttt"
 GM.Email = ""
 GM.Website = ""
-GM.Base = "sandbox"
+GM.Base = "base"
 
-DeriveGamemode("sandbox")
+DeriveGamemode("base")
 
 local side_label = SERVER and "SERVER" or "CLIENT"
 print("[BLACKLAW_TTT] shared.lua loaded (" .. side_label .. ")")
