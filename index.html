@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trouble in Terrorist Town 2 - Gerüst</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <div>
+          <p class="kicker">TTT2</p>
+          <h1>Trouble in Terrorist Town 2</h1>
+          <p class="subtitle">Gerüst für den weiteren Ausbau</p>
+        </div>
+        <div class="status">
+          <p class="label">Spielstatus</p>
+          <p id="game-status" class="value">Warte auf Spieler</p>
+        </div>
+      </header>
+
+      <main>
+        <section class="card">
+          <h2>Spieler verwalten</h2>
+          <form id="player-form" class="player-form">
+            <input
+              id="player-name"
+              type="text"
+              placeholder="Spielername"
+              autocomplete="off"
+              required
+            />
+            <button type="submit">Hinzufügen</button>
+          </form>
+          <ul id="player-list" class="player-list"></ul>
+          <div class="player-actions">
+            <button id="start-game" class="primary">Spiel starten</button>
+            <button id="reset-game" class="ghost">Spiel zurücksetzen</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Rollenübersicht</h2>
+          <p class="helper">Die Rollen werden beim Start automatisch zugewiesen.</p>
+          <div id="roles" class="roles"></div>
+        </section>
+
+        <section class="card">
+          <h2>Phasensteuerung</h2>
+          <p class="helper">Steuere Tag/Nacht für spätere Logik.</p>
+          <div class="phase">
+            <div>
+              <p class="label">Aktuelle Phase</p>
+              <p id="phase-status" class="value">Tag</p>
+            </div>
+            <button id="toggle-phase">Phase wechseln</button>
+          </div>
+          <div class="log">
+            <p class="label">Ereignis-Log</p>
+            <ul id="event-log"></ul>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
