@@ -47,6 +47,41 @@ local function get_float(name, fallback)
   return value
 end
 
+local function is_admin_debug_enabled()
+  local value = get_config("bl_admin_debug", false)
+  return value == true
+end
+
+local function should_allow_free_roam(ply)
+  if not is_admin_debug_enabled() then
+    return false
+  end
+  if not IsValid(ply) then
+    return false
+  end
+  return ply:IsAdmin()
+end
+
+local function is_player_alive(ply)
+  if not IsValid(ply) then
+    return false
+  end
+  if ply.BLTTT_Alive ~= nil then
+    return ply.BLTTT_Alive
+  end
+  return ply:Alive()
+end
+
+local function set_player_alive(ply, is_alive)
+  if not IsValid(ply) then
+    return
+  end
+  ply.BLTTT_Alive = is_alive and true or false
+  if ply.SetNWBool then
+    ply:SetNWBool("blttt_alive", ply.BLTTT_Alive)
+  end
+end
+
 local function broadcast_snapshot()
   if BL.Net and BL.Net.BroadcastSnapshot then
     BL.Net.BroadcastSnapshot()
@@ -101,9 +136,27 @@ local function make_spectator(ply)
   end
   ply:StripWeapons()
   ply:StripAmmo()
-  ply:Spectate(OBS_MODE_ROAMING)
-  ply:SpectateEntity(nil)
-  ply:Freeze(true)
+  set_player_alive(ply, false)
+  if BL and BL.TEAMS and BL.TEAMS.SPECTATOR then
+    ply:SetTeam(BL.TEAMS.SPECTATOR)
+  end
+
+  local spectate_target = nil
+  for _, target in ipairs(player.GetAll()) do
+    if IsValid(target) and target ~= ply and is_player_alive(target) then
+      spectate_target = target
+      break
+    end
+  end
+
+  if should_allow_free_roam(ply) or not IsValid(spectate_target) then
+    ply:Spectate(OBS_MODE_ROAMING)
+    ply:SpectateEntity(nil)
+  else
+    ply:Spectate(OBS_MODE_CHASE)
+    ply:SpectateEntity(spectate_target)
+  end
+  ply:Freeze(false)
 end
 
 local function spawn_player(ply, freeze)
@@ -114,11 +167,35 @@ local function spawn_player(ply, freeze)
   ply:Spawn()
   ply:StripWeapons()
   ply:StripAmmo()
+  set_player_alive(ply, true)
+  if BL and BL.TEAMS and BL.TEAMS.ALIVE then
+    ply:SetTeam(BL.TEAMS.ALIVE)
+  end
   for _, weapon in ipairs(DEFAULT_LOADOUT) do
     ply:Give(weapon)
   end
   ply:GiveAmmo(60, "Pistol", true)
   ply:Freeze(freeze or false)
+end
+
+local function create_corpse_for_player(ply)
+  if not IsValid(ply) then
+    return
+  end
+
+  local corpse = ents.Create("prop_ragdoll")
+  if not IsValid(corpse) then
+    return
+  end
+
+  corpse:SetModel(ply:GetModel())
+  corpse:SetPos(ply:GetPos())
+  corpse:SetAngles(ply:GetAngles())
+  corpse:Spawn()
+  corpse:Activate()
+
+  corpse.BLTTT_VictimSteamID64 = ply:SteamID64()
+  corpse.BLTTT_VictimRole = ply.BLTTT_Role or ""
 end
 
 local function eligible_players()
@@ -184,7 +261,7 @@ local function check_win_condition()
   local traitors_alive = 0
   local innocents_alive = 0
   for _, ply in ipairs(player.GetAll()) do
-    if IsValid(ply) and ply:Alive() and not ply.BLTTT_LateJoiner then
+    if IsValid(ply) and is_player_alive(ply) and not ply.BLTTT_LateJoiner then
       if ply.BLTTT_Role == "traitor" then
         traitors_alive = traitors_alive + 1
       elseif ply.BLTTT_Role == "innocent" then
@@ -349,7 +426,14 @@ hook.Add("PlayerSpawn", "BL.RoundManager.PlayerSpawn", function(ply)
     return
   end
 
-  if ply.BLTTT_LateJoiner then
+  local phase = BL.State and BL.State.Data and BL.State.Data.phase or PHASES.LOBBY
+  if phase == PHASES.ACTIVE and ply.BLTTT_Alive == false then
+    timer.Simple(0, function()
+      if IsValid(ply) then
+        make_spectator(ply)
+      end
+    end)
+  elseif ply.BLTTT_LateJoiner then
     timer.Simple(0, function()
       if IsValid(ply) then
         make_spectator(ply)
@@ -364,8 +448,24 @@ hook.Add("PlayerDisconnected", "BL.RoundManager.PlayerDisconnected", function(_p
   end
 end)
 
-hook.Add("PlayerDeath", "BL.RoundManager.PlayerDeath", function(_ply)
-  if BL.State and BL.State.Data and BL.State.Data.phase == PHASES.ACTIVE then
+hook.Add("PlayerDeath", "BL.RoundManager.PlayerDeath", function(ply)
+  if not IsValid(ply) then
+    return
+  end
+
+  local phase = BL.State and BL.State.Data and BL.State.Data.phase or PHASES.LOBBY
+  set_player_alive(ply, false)
+  if BL and BL.TEAMS and BL.TEAMS.SPECTATOR then
+    ply:SetTeam(BL.TEAMS.SPECTATOR)
+  end
+
+  if phase == PHASES.ACTIVE then
+    timer.Simple(0, function()
+      if IsValid(ply) then
+        make_spectator(ply)
+      end
+    end)
+    create_corpse_for_player(ply)
     check_win_condition()
   end
 end)

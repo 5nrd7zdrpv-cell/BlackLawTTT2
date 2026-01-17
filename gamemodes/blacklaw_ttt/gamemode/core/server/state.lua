@@ -38,13 +38,26 @@ local function get_role_flag(ply, key)
   return false
 end
 
+local function is_player_alive(ply)
+  if not IsValid(ply) then
+    return false
+  end
+  if ply.BLTTT_Alive ~= nil then
+    return ply.BLTTT_Alive
+  end
+  if ply.GetNWBool then
+    return ply:GetNWBool("blttt_alive", ply:Alive())
+  end
+  return ply:Alive()
+end
+
 local function build_players_summary()
   local summary = {}
   for _, ply in ipairs(player.GetAll()) do
     summary[#summary + 1] = {
       steamid64 = ply:SteamID64(),
       name = ply:Nick(),
-      alive = ply:Alive(),
+      alive = is_player_alive(ply),
       role_revealed = get_role_flag(ply, "RoleRevealed"),
       role_public = get_role_flag(ply, "RolePublic"),
     }
@@ -69,7 +82,7 @@ local function build_alive_counts()
   local alive = 0
   for _, ply in ipairs(player.GetAll()) do
     total = total + 1
-    if ply:Alive() then
+    if is_player_alive(ply) then
       alive = alive + 1
     end
   end
