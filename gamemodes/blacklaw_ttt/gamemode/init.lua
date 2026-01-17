@@ -30,6 +30,21 @@ end
 
 blt_boot_log("Server init start")
 
+local function blt_addcs_dir(dir)
+  local gamemode_name = engine.ActiveGamemode and engine.ActiveGamemode() or (GM and GM.FolderName) or "blacklaw_ttt"
+  if gamemode_name == "" then
+    gamemode_name = "blacklaw_ttt"
+  end
+  local search_root = "gamemodes/" .. gamemode_name .. "/gamemode/"
+  local files, _ = file.Find(search_root .. dir .. "/*.lua", "LUA")
+  for _, fileName in ipairs(files) do
+    local relative_path = dir .. "/" .. fileName
+    blt_safe("AddCSLuaFile " .. relative_path, function()
+      AddCSLuaFile(relative_path)
+    end)
+  end
+end
+
 local function blt_include_dir(dir)
   local gamemode_name = engine.ActiveGamemode and engine.ActiveGamemode() or (GM and GM.FolderName) or "blacklaw_ttt"
   if gamemode_name == "" then
@@ -44,6 +59,10 @@ local function blt_include_dir(dir)
     end)
   end
 end
+
+blt_addcs_dir("core/client")
+blt_addcs_dir("net/client")
+blt_addcs_dir("ui")
 
 blt_include_dir("core/server")
 blt_include_dir("net/server")
