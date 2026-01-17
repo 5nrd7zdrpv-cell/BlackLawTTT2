@@ -102,6 +102,7 @@ register_server_convar("bl_prep_time", 30, "Preparation time before the round st
 register_server_convar("bl_post_time", 15, "Post-round time after a round ends.", { type = "int", min = 5, max = 120 })
 register_server_convar("bl_min_players", 4, "Minimum players required to start a round.", { type = "int", min = 1, max = 64 })
 register_server_convar("bl_traitor_ratio", 0.25, "Ratio of traitors per player count.", { type = "float", min = 0.05, max = 0.75 })
+register_server_convar("bl_timeout_innocents_win", 1, "On timeout, innocents win if any survive.", { type = "bool", min = 0, max = 1 })
 register_server_convar("bl_shop_enabled", 1, "Enable the equipment shop.", { type = "bool", min = 0, max = 1 })
 register_server_convar("bl_karma_enabled", 1, "Enable the karma system.", { type = "bool", min = 0, max = 1 })
 register_server_convar("bl_ff_scale", 0.5, "Friendly fire damage scale.", { type = "float", min = 0, max = 1 })

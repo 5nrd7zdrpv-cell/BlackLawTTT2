@@ -15,6 +15,7 @@ BL.State.Data = BL.State.Data or {
   round_id = 0,
   phase_start = os.time(),
   event_log = {},
+  post_round_summary = nil,
 }
 
 local function get_role_for_player(ply)
@@ -120,6 +121,20 @@ local function copy_event_log()
   return copy
 end
 
+local function copy_post_round_summary()
+  local summary = BL.State.Data.post_round_summary
+  if type(summary) ~= "table" then
+    return nil
+  end
+  return {
+    reason = summary.reason,
+    winner = summary.winner,
+    round_id = summary.round_id,
+    role_counts = table.Copy(summary.role_counts or {}),
+    alive_counts = table.Copy(summary.alive_counts or {}),
+  }
+end
+
 function BL.State.GetSnapshot(ply)
   local phase = BL.State.Data.phase
   return {
@@ -130,6 +145,7 @@ function BL.State.GetSnapshot(ply)
     role_counts = build_role_counts(),
     alive_counts = build_alive_counts(),
     event_log = copy_event_log(),
+    post_round_summary = copy_post_round_summary(),
   }
 end
 
