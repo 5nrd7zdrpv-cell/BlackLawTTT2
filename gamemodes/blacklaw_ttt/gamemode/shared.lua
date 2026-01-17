@@ -12,7 +12,12 @@ local function blt_include(path)
 end
 
 local function blt_include_dir(dir)
-  local files, _ = file.Find(dir .. "/*.lua", "LUA")
+  local gamemode_name = engine.ActiveGamemode and engine.ActiveGamemode() or (GM and GM.FolderName) or "blacklaw_ttt"
+  if gamemode_name == "" then
+    gamemode_name = "blacklaw_ttt"
+  end
+  local search_root = "gamemodes/" .. gamemode_name .. "/gamemode/"
+  local files, _ = file.Find(search_root .. dir .. "/*.lua", "LUA")
   for _, fileName in ipairs(files) do
     blt_include(dir .. "/" .. fileName)
   end
