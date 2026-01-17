@@ -28,6 +28,17 @@ local function push_event(event)
   BL.Net.Cache.last_event_at = CurTime()
 end
 
+local function request_snapshot()
+  if not BL.Net or not BL.Net.Messages or not BL.Net.Messages.ClientEvent then
+    return
+  end
+  net.Start(BL.Net.Messages.ClientEvent)
+  net.WriteTable({
+    type = "request_snapshot",
+  })
+  net.SendToServer()
+end
+
 net.Receive(BL.Net.Messages.Snapshot, function()
   local snapshot = BL.Net.ReadCompressedTable and BL.Net.ReadCompressedTable() or net.ReadTable()
   if type(snapshot) ~= "table" then
@@ -124,6 +135,16 @@ net.Receive(BL.Net.Messages.Notice, function()
   if notice_type == "shop_purchase" then
     handle_shop_notice(payload)
   end
+end)
+
+hook.Add("InitPostEntity", "BL.Net.RequestInitialSnapshot", function()
+  if BL.Net._initial_snapshot_requested then
+    return
+  end
+  BL.Net._initial_snapshot_requested = true
+  timer.Simple(0, function()
+    request_snapshot()
+  end)
 end)
 
 function BL.Net.GetSnapshot()

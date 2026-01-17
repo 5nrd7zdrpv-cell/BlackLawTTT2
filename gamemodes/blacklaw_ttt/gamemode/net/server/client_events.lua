@@ -24,7 +24,11 @@ BL.Net.Receive(BL.Net.Messages.ClientEvent, { limit = 5, interval = 1 }, functio
     return
   end
 
-  if event_type == "inspect_player" then
+  if event_type == "request_snapshot" then
+    if BL.Net and BL.Net.SendSnapshot then
+      BL.Net.SendSnapshot(ply)
+    end
+  elseif event_type == "inspect_player" then
     if not BL.Perm or not BL.Perm.Has or not BL.Perm.Has(ply, "player.action") then
       return
     end
