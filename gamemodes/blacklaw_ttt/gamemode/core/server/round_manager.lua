@@ -54,7 +54,7 @@ local function should_allow_free_roam(ply)
   if not IsValid(ply) then
     return false
   end
-  return ply:IsAdmin()
+  return BL.Perm and BL.Perm.Has and BL.Perm.Has(ply, "round.control")
 end
 
 local function is_player_alive(ply)
@@ -556,7 +556,7 @@ hook.Add("Initialize", "BL.RoundManager.Initialize", function()
 end)
 
 concommand.Add("bl_forceroundstart", function(ply)
-  if IsValid(ply) and not ply:IsAdmin() then
+  if IsValid(ply) and (not BL.Perm or not BL.Perm.Has or not BL.Perm.Has(ply, "round.control")) then
     return
   end
   if not BL.RoundManager.ForceRoundStart() then
@@ -566,7 +566,7 @@ concommand.Add("bl_forceroundstart", function(ply)
 end)
 
 concommand.Add("bl_forceroundend", function(ply)
-  if IsValid(ply) and not ply:IsAdmin() then
+  if IsValid(ply) and (not BL.Perm or not BL.Perm.Has or not BL.Perm.Has(ply, "round.control")) then
     return
   end
   if not BL.RoundManager.ForceRoundEnd() then

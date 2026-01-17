@@ -20,7 +20,7 @@ function BL.Inspect.Request(viewer, target)
   if not IsValid(viewer) or not IsValid(target) then
     return false
   end
-  if not viewer:IsAdmin() then
+  if not BL.Perm or not BL.Perm.Has or not BL.Perm.Has(viewer, "player.action") then
     return false
   end
 

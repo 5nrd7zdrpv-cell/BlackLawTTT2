@@ -216,7 +216,7 @@ function BL.State.SetPhase(phase)
 end
 
 concommand.Add("bl_debug_state", function(ply)
-  if IsValid(ply) and not ply:IsAdmin() then
+  if IsValid(ply) and (not BL.Perm or not BL.Perm.Has or not BL.Perm.Has(ply, "logs.view")) then
     return
   end
 
