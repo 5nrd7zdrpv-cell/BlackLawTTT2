@@ -15,9 +15,15 @@ end
 
 local function check_required_files(required)
   local errors = {}
+  local gamemode_name = engine.ActiveGamemode and engine.ActiveGamemode() or (GM and GM.FolderName) or "blacklaw_ttt"
+  if gamemode_name == "" then
+    gamemode_name = "blacklaw_ttt"
+  end
+  local base_path = "gamemodes/" .. gamemode_name .. "/gamemode/"
   for _, path in ipairs(required) do
-    if not file.Exists(path, "LUA") then
-      errors[#errors + 1] = "Missing file: " .. path
+    local resolved_path = base_path .. path
+    if not file.Exists(resolved_path, "LUA") then
+      errors[#errors + 1] = "Missing file: " .. resolved_path
     end
   end
   return errors

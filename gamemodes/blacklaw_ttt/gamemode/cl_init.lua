@@ -30,6 +30,9 @@ local function blt_include_dir(dir)
   end
   local search_root = "gamemodes/" .. gamemode_name .. "/gamemode/"
   local files, _ = file.Find(search_root .. dir .. "/*.lua", "LUA")
+  if type(files) == "table" then
+    table.sort(files)
+  end
   for _, fileName in ipairs(files) do
     local relative_path = dir .. "/" .. fileName
     blt_safe("include " .. relative_path, function()
