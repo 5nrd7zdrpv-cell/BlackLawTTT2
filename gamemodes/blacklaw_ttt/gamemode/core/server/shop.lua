@@ -169,6 +169,61 @@ local function increment_player_count(ply, item_id)
   entry[item_id] = (entry[item_id] or 0) + 1
 end
 
+function BL.Shop.GetRoundCount(item_id)
+  return get_round_count(item_id)
+end
+
+function BL.Shop.GetPlayerCount(ply, item_id)
+  return get_player_count(ply, item_id)
+end
+
+function BL.Shop.BuildClientSnapshot(ply)
+  local role_id = get_role_id(ply)
+  local credits = 0
+  if IsValid(ply) and BL.Credits and BL.Credits.Get then
+    credits = BL.Credits.Get(ply)
+  end
+
+  local shop = {
+    role_id = role_id,
+    credits = credits,
+    items = {},
+  }
+
+  for _, item in ipairs(BL.Shop.Registry.order) do
+    local round_count = get_round_count(item.id)
+    local player_count = get_player_count(ply, item.id)
+    local role_allowed_value = role_allowed(item, role_id)
+    local round_limit_reached = item.per_round_limit > 0 and round_count >= item.per_round_limit
+    local player_limit_reached = item.per_player_limit > 0 and player_count >= item.per_player_limit
+    local can_afford_value = credits >= item.price
+    local status = "ok"
+
+    if not role_allowed_value then
+      status = "role_restricted"
+    elseif round_limit_reached or player_limit_reached then
+      status = "limit_reached"
+    elseif not can_afford_value then
+      status = "no_credits"
+    end
+
+    shop.items[#shop.items + 1] = {
+      id = item.id,
+      name = item.name,
+      price = item.price,
+      per_round_limit = item.per_round_limit,
+      per_player_limit = item.per_player_limit,
+      round_count = round_count,
+      player_count = player_count,
+      role_allowed = role_allowed_value,
+      can_afford = can_afford_value,
+      status = status,
+    }
+  end
+
+  return shop
+end
+
 function BL.Shop.TryPurchase(ply, item_id)
   if not IsValid(ply) then
     return false

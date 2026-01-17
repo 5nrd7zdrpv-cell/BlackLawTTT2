@@ -163,6 +163,10 @@ end
 
 function BL.State.GetSnapshot(ply)
   local phase = BL.State.Data.phase
+  local shop_snapshot = nil
+  if BL.Shop and BL.Shop.BuildClientSnapshot then
+    shop_snapshot = BL.Shop.BuildClientSnapshot(ply)
+  end
   return {
     phase = phase,
     round_id = BL.State.Data.round_id,
@@ -173,6 +177,7 @@ function BL.State.GetSnapshot(ply)
     event_log = copy_event_log(),
     post_round_summary = copy_post_round_summary(),
     credits = BL.Credits and BL.Credits.Get and BL.Credits.Get(ply) or 0,
+    shop = shop_snapshot,
   }
 end
 
