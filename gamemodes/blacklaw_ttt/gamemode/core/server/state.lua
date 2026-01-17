@@ -53,10 +53,33 @@ local function should_reveal_role(viewer, target, phase)
   if phase == "POST" then
     return true
   end
-  if not IsValid(viewer) or not IsValid(target) then
+  if not IsValid(target) then
     return false
   end
-  return viewer == target
+  if get_role_flag(target, "RoleRevealed") or get_role_flag(target, "RolePublic") then
+    return true
+  end
+  if not IsValid(viewer) then
+    return false
+  end
+  if viewer == target then
+    return true
+  end
+  if BL.Inspect and BL.Inspect.CanReveal and BL.Inspect.CanReveal(viewer, target) then
+    return true
+  end
+  return false
+end
+
+local function get_round_stat(ply, field)
+  if not IsValid(ply) then
+    return 0
+  end
+  local value = ply[field]
+  if type(value) ~= "number" then
+    return 0
+  end
+  return math.max(0, math.floor(value))
 end
 
 local function build_players_summary(viewer, phase)
@@ -69,7 +92,10 @@ local function build_players_summary(viewer, phase)
     summary[#summary + 1] = {
       steamid64 = ply:SteamID64(),
       name = ply:Nick(),
+      ping = ply:Ping() or 0,
       alive = is_player_alive(ply),
+      round_kills = get_round_stat(ply, "BLTTT_RoundKills"),
+      round_deaths = get_round_stat(ply, "BLTTT_RoundDeaths"),
       role_revealed = get_role_flag(ply, "RoleRevealed"),
       role_public = get_role_flag(ply, "RolePublic"),
       role_id = role_id,
