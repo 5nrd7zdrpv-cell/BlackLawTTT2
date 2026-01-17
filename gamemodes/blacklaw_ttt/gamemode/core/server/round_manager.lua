@@ -402,6 +402,10 @@ function BL.RoundManager.SetPhase(phase)
     push_event("phase_post", { ends_at = BL.RoundManager.State.next_phase_time })
   end
 
+  if BL.Shop and BL.Shop.OnPhaseChanged then
+    BL.Shop.OnPhaseChanged(phase)
+  end
+
   broadcast_snapshot()
   return true
 end
