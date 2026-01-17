@@ -328,6 +328,7 @@ function INSPECT:Paint(w, h)
   local ping = normalize_ping(self.Entry.ping)
   local kills = normalize_ping(self.Entry.round_kills)
   local deaths = normalize_ping(self.Entry.round_deaths)
+  local persistent = type(self.Entry.stats) == "table" and self.Entry.stats or nil
 
   local text_x = self.Padding + self.Avatar:GetWide() + self.Padding
   local text_y = self.Padding + BL.UI.bl_ui_scale(6)
@@ -341,6 +342,22 @@ function INSPECT:Paint(w, h)
   draw.SimpleText("Kills (Runde): " .. tostring(kills), style.Fonts.Body, self.Padding, stats_y + style.Spacing.lg, style.Colors.Text)
   draw.SimpleText("Deaths (Runde): " .. tostring(deaths), style.Fonts.Body, self.Padding, stats_y + style.Spacing.lg * 2, style.Colors.Text)
   draw.SimpleText("Ping: " .. tostring(ping) .. " ms", style.Fonts.Body, self.Padding, stats_y + style.Spacing.lg * 3, style.Colors.Text)
+
+  local persistent_y = stats_y + style.Spacing.lg * 5
+  draw.SimpleText("Persistente Stats", style.Fonts.Label, self.Padding, persistent_y, style.Colors.TextMuted)
+  if persistent then
+    draw.SimpleText("Kills: " .. tostring(persistent.kills or 0), style.Fonts.Body, self.Padding, persistent_y + style.Spacing.lg, style.Colors.Text)
+    draw.SimpleText("Deaths: " .. tostring(persistent.deaths or 0), style.Fonts.Body, self.Padding, persistent_y + style.Spacing.lg * 2, style.Colors.Text)
+    draw.SimpleText("Runden: " .. tostring(persistent.rounds or 0), style.Fonts.Body, self.Padding, persistent_y + style.Spacing.lg * 3, style.Colors.Text)
+    draw.SimpleText("Siege (Inno): " .. tostring(persistent.wins_inno or 0), style.Fonts.Body, self.Padding, persistent_y + style.Spacing.lg * 4, style.Colors.Text)
+    draw.SimpleText("Siege (Traitor): " .. tostring(persistent.wins_traitor or 0), style.Fonts.Body, self.Padding, persistent_y + style.Spacing.lg * 5, style.Colors.Text)
+    if (persistent.last_seen or 0) > 0 then
+      local last_seen = os.date("%d.%m.%Y %H:%M", persistent.last_seen)
+      draw.SimpleText("Zuletzt gesehen: " .. last_seen, style.Fonts.Body, self.Padding, persistent_y + style.Spacing.lg * 6, style.Colors.TextMuted)
+    end
+  else
+    draw.SimpleText("Nur für dich oder Admins sichtbar.", style.Fonts.Body, self.Padding, persistent_y + style.Spacing.lg, style.Colors.TextMuted)
+  end
 
   local is_admin = LocalPlayer and IsValid(LocalPlayer()) and LocalPlayer():IsAdmin()
   if not is_admin then
