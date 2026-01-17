@@ -194,7 +194,8 @@ local function create_corpse_for_player(ply)
     return
   end
 
-  corpse:SetModel(ply:GetModel())
+  local model = BL.Assets and BL.Assets.GetSafeModel and BL.Assets.GetSafeModel(ply:GetModel(), "corpse") or ply:GetModel()
+  corpse:SetModel(model)
   corpse:SetPos(ply:GetPos())
   corpse:SetAngles(ply:GetAngles())
   corpse:Spawn()

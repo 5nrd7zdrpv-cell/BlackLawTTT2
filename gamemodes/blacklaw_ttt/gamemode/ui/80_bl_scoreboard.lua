@@ -168,6 +168,19 @@ function INSPECT:Init()
   self.HeaderHeight = style.Spacing.xl
   self:SetPaintBackground(false)
 
+  self.AvatarFallback = vgui.Create("DPanel", self)
+  self.AvatarFallback:SetSize(BL.UI.bl_ui_scale(64), BL.UI.bl_ui_scale(64))
+  self.AvatarFallback:SetPaintBackground(false)
+  self.AvatarFallback.Paint = function(panel, w, h)
+    local icon = BL.Assets and BL.Assets.GetIconMaterial and BL.Assets.GetIconMaterial(BL.Assets.DefaultIcon, "avatar_fallback") or nil
+    if not icon then
+      return
+    end
+    surface.SetDrawColor(color_white)
+    surface.SetMaterial(icon)
+    surface.DrawTexturedRect(0, 0, w, h)
+  end
+
   self.Avatar = vgui.Create("AvatarImage", self)
   self.Avatar:SetSize(BL.UI.bl_ui_scale(64), BL.UI.bl_ui_scale(64))
 
@@ -183,6 +196,15 @@ function INSPECT:Init()
   self.EmptyLabel:SizeToContents()
 end
 
+function INSPECT:SetAvatarFallback(enabled)
+  if IsValid(self.Avatar) then
+    self.Avatar:SetVisible(not enabled)
+  end
+  if IsValid(self.AvatarFallback) then
+    self.AvatarFallback:SetVisible(enabled)
+  end
+end
+
 function INSPECT:SetEntry(entry, phase)
   self.Entry = entry
   self.Phase = phase or self.Phase
@@ -191,16 +213,22 @@ function INSPECT:SetEntry(entry, phase)
     return
   end
 
+  local has_valid_avatar = false
   if type(entry) == "table" then
     local steamid64 = entry.steamid64
     if type(steamid64) == "string" and steamid64 ~= "" and util and util.SteamIDFrom64 then
       local steamid = util.SteamIDFrom64(steamid64)
-      if steamid then
+      if steamid and steamid ~= "" then
         self.Avatar:SetSteamID(steamid, 64)
+        has_valid_avatar = true
       end
     end
   end
 
+  if not has_valid_avatar and BL.Assets and BL.Assets.LogMissing then
+    BL.Assets.LogMissing("avatar", "steam_avatar")
+  end
+  self:SetAvatarFallback(not has_valid_avatar)
   self:RefreshActions()
 end
 
@@ -257,8 +285,10 @@ end
 function INSPECT:PerformLayout(w, h)
   local style = get_style()
   local padding = self.Padding
-  local avatar_size = self.Avatar:GetWide()
   self.Avatar:SetPos(padding, padding + style.Spacing.lg)
+  if IsValid(self.AvatarFallback) then
+    self.AvatarFallback:SetPos(padding, padding + style.Spacing.lg)
+  end
 
   if IsValid(self.ActionBar) then
     self.ActionBar:SetWide(w - padding * 2)
