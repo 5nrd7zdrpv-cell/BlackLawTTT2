@@ -4,5 +4,5 @@
   "author" "blacklaw_ttt"
   "email" ""
   "website" ""
-  "base" "sandbox"
+  "base" "base"
 }
