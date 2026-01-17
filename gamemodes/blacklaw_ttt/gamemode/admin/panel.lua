@@ -52,6 +52,9 @@ local function build_target(ply)
 end
 
 local function find_player_by_steamid64(steamid64)
+  if BL.Net and BL.Net.IsSteamID64 and not BL.Net.IsSteamID64(steamid64) then
+    return nil
+  end
   if type(steamid64) ~= "string" or steamid64 == "" then
     return nil
   end
@@ -278,7 +281,13 @@ BL.Net.Receive(BL.Net.Messages.AdminAction, { limit = ACTION_LIMIT, interval = A
 
   local reason = sanitize_reason(payload.reason)
   local target_id = payload.target
-  local target = find_player_by_steamid64(target_id)
+  local target = nil
+  if target_id ~= nil then
+    if BL.Net and BL.Net.IsSteamID64 and not BL.Net.IsSteamID64(target_id) then
+      return
+    end
+    target = find_player_by_steamid64(target_id)
+  end
 
   if action == "round_start" then
     if not has_perm(ply, "round.control") then
