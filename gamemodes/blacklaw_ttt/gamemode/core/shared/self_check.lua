@@ -79,23 +79,23 @@ end
 function BL.SelfCheck.Run()
   local errors = {}
   local required = {
-    "blacklaw_ttt/gamemode/shared.lua",
-    "blacklaw_ttt/gamemode/net/shared/messages.lua",
-    "blacklaw_ttt/gamemode/net/shared/codec.lua",
-    "blacklaw_ttt/gamemode/core/shared/config.lua",
-    "blacklaw_ttt/gamemode/core/shared/assets.lua",
+    "shared.lua",
+    "net/shared/messages.lua",
+    "net/shared/codec.lua",
+    "core/shared/config.lua",
+    "core/shared/assets.lua",
   }
 
   if SERVER then
-    required[#required + 1] = "blacklaw_ttt/gamemode/init.lua"
-    required[#required + 1] = "blacklaw_ttt/gamemode/core/server/state.lua"
-    required[#required + 1] = "blacklaw_ttt/gamemode/core/server/round_manager.lua"
+    required[#required + 1] = "init.lua"
+    required[#required + 1] = "core/server/state.lua"
+    required[#required + 1] = "core/server/round_manager.lua"
   end
 
   if CLIENT then
-    required[#required + 1] = "blacklaw_ttt/gamemode/cl_init.lua"
-    required[#required + 1] = "blacklaw_ttt/gamemode/ui/40_bl_toast.lua"
-    required[#required + 1] = "blacklaw_ttt/gamemode/ui/70_bl_hud.lua"
+    required[#required + 1] = "cl_init.lua"
+    required[#required + 1] = "ui/40_bl_toast.lua"
+    required[#required + 1] = "ui/70_bl_hud.lua"
   end
 
   for _, issue in ipairs(check_required_files(required)) do

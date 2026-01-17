@@ -17,8 +17,8 @@ local function blt_include_dir(dir)
   end
 end
 
-blt_include_dir("blacklaw_ttt/gamemode/core/client")
-blt_include_dir("blacklaw_ttt/gamemode/net/client")
-blt_include_dir("blacklaw_ttt/gamemode/ui")
+blt_include_dir("core/client")
+blt_include_dir("net/client")
+blt_include_dir("ui")
 
 blt_boot_log("Client init complete")
