@@ -9,12 +9,14 @@ local STATE_PHASES = {
 }
 
 local MAX_EVENTS = 200
+local MAX_ADMIN_ACTIONS = 200
 
 BL.State.Data = BL.State.Data or {
   phase = "LOBBY",
   round_id = 0,
   phase_start = os.time(),
   event_log = {},
+  admin_action_log = {},
   post_round_summary = nil,
 }
 
@@ -147,6 +149,21 @@ local function copy_event_log()
   return copy
 end
 
+local function copy_admin_action_log()
+  local copy = {}
+  for index, entry in ipairs(BL.State.Data.admin_action_log) do
+    copy[index] = {
+      time = entry.time,
+      actor = entry.actor,
+      target = entry.target,
+      action = entry.action,
+      reason = entry.reason,
+      detail = entry.detail,
+    }
+  end
+  return copy
+end
+
 local function copy_post_round_summary()
   local summary = BL.State.Data.post_round_summary
   if type(summary) ~= "table" then
@@ -181,6 +198,13 @@ function BL.State.GetSnapshot(ply)
   }
 end
 
+function BL.State.GetAdminActionLog(ply)
+  if IsValid(ply) and (not BL.Perm or not BL.Perm.Has or not BL.Perm.Has(ply, "logs.view")) then
+    return nil
+  end
+  return copy_admin_action_log()
+end
+
 function BL.State.PushEvent(event_type, payload)
   if not event_type or event_type == "" then
     return
@@ -195,6 +219,32 @@ function BL.State.PushEvent(event_type, payload)
   local log = BL.State.Data.event_log
   log[#log + 1] = entry
   if #log > MAX_EVENTS then
+    table.remove(log, 1)
+  end
+end
+
+function BL.State.PushAdminAction(entry)
+  if type(entry) ~= "table" then
+    return
+  end
+
+  local action = entry.action
+  if type(action) ~= "string" or action == "" then
+    return
+  end
+
+  local log_entry = {
+    time = entry.time or os.time(),
+    actor = entry.actor,
+    target = entry.target,
+    action = action,
+    reason = entry.reason,
+    detail = entry.detail,
+  }
+
+  local log = BL.State.Data.admin_action_log
+  log[#log + 1] = log_entry
+  if #log > MAX_ADMIN_ACTIONS then
     table.remove(log, 1)
   end
 end
