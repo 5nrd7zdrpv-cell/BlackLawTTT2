@@ -338,8 +338,10 @@ local function grant_disguiser(ply)
   end
 
   local selection = model_list[math.random(#model_list)]
-  ply:SetModel(selection)
-  ply:SetMaterial("models/shiny")
+  local safe_model = BL.Assets and BL.Assets.GetSafeModel and BL.Assets.GetSafeModel(selection, "disguiser") or selection
+  ply:SetModel(safe_model)
+  local safe_material = BL.Assets and BL.Assets.GetSafeMaterial and BL.Assets.GetSafeMaterial("models/shiny", "disguiser") or "models/shiny"
+  ply:SetMaterial(safe_material)
   ply.BLTTT_Disguised = true
   return true
 end
