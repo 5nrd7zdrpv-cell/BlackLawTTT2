@@ -243,6 +243,13 @@ local function reveal_roles()
   for _, ply in ipairs(player.GetAll()) do
     if IsValid(ply) then
       set_role_flags(ply, true, true)
+      push_event("role_reveal", {
+        steamid64 = ply:SteamID64(),
+        name = ply:Nick(),
+        role_id = ply.BLTTT_RoleId or 0,
+        role_key = BL.Roles and BL.Roles.GetRoleKey and BL.Roles.GetRoleKey(ply.BLTTT_RoleId or 0) or "",
+        role_name = BL.Roles and BL.Roles.GetRoleName and BL.Roles.GetRoleName(ply.BLTTT_RoleId or 0) or "",
+      })
     end
   end
 end
@@ -258,14 +265,7 @@ local function build_round_summary(reason, winner)
   }
 end
 
-local function end_round(reason, winner)
-  BL.RoundManager.State.last_summary = build_round_summary(reason, winner)
-  reveal_roles()
-  BL.RoundManager.SetPhase(PHASES.POST)
-  push_event("round_summary", BL.RoundManager.State.last_summary)
-end
-
-local function check_win_condition()
+local function count_alive_roles()
   local traitors_alive = 0
   local innocents_alive = 0
   for _, ply in ipairs(player.GetAll()) do
@@ -277,6 +277,26 @@ local function check_win_condition()
       end
     end
   end
+  return traitors_alive, innocents_alive
+end
+
+local function end_round(reason, winner)
+  BL.RoundManager.State.last_summary = build_round_summary(reason, winner)
+  if BL.State and BL.State.Data then
+    BL.State.Data.post_round_summary = BL.RoundManager.State.last_summary
+  end
+  push_event("round_win", {
+    winner = winner,
+    reason = reason,
+    round_id = BL.RoundManager.State.last_summary.round_id,
+  })
+  reveal_roles()
+  BL.RoundManager.SetPhase(PHASES.POST)
+  push_event("round_summary", BL.RoundManager.State.last_summary)
+end
+
+local function check_win_condition()
+  local traitors_alive, innocents_alive = count_alive_roles()
 
   if traitors_alive <= 0 and innocents_alive > 0 then
     end_round("traitors_eliminated", "innocents")
@@ -294,6 +314,28 @@ local function check_win_condition()
   end
 
   return false
+end
+
+local function handle_timeout()
+  local traitors_alive, innocents_alive = count_alive_roles()
+  if innocents_alive > 0 then
+    if get_config("bl_timeout_innocents_win", true) == true then
+      end_round("timeout", "innocents")
+      return
+    end
+  end
+
+  if traitors_alive <= 0 and innocents_alive <= 0 then
+    end_round("timeout", "none")
+    return
+  end
+
+  if innocents_alive <= 0 and traitors_alive > 0 then
+    end_round("timeout", "traitors")
+    return
+  end
+
+  end_round("timeout", "none")
 end
 
 function BL.RoundManager.SetPhase(phase)
@@ -369,7 +411,7 @@ function BL.RoundManager.Tick()
     end
   elseif phase == PHASES.ACTIVE then
     if CurTime() >= (BL.RoundManager.State.next_phase_time or 0) then
-      end_round("timeout", "none")
+      handle_timeout()
     else
       check_win_condition()
     end
@@ -466,6 +508,18 @@ hook.Add("PlayerDeath", "BL.RoundManager.PlayerDeath", function(ply)
   if BL and BL.TEAMS and BL.TEAMS.SPECTATOR then
     ply:SetTeam(BL.TEAMS.SPECTATOR)
   end
+  local payload = {
+    steamid64 = ply:SteamID64(),
+    name = ply:Nick(),
+    role_revealed = ply.BLTTT_RoleRevealed == true,
+    role_public = ply.BLTTT_RolePublic == true,
+  }
+  if phase == PHASES.POST or payload.role_public then
+    payload.role_id = ply.BLTTT_RoleId or 0
+    payload.role_key = BL.Roles and BL.Roles.GetRoleKey and BL.Roles.GetRoleKey(payload.role_id) or ""
+    payload.role_name = BL.Roles and BL.Roles.GetRoleName and BL.Roles.GetRoleName(payload.role_id) or ""
+  end
+  push_event("player_death", payload)
 
   if phase == PHASES.ACTIVE then
     timer.Simple(0, function()
