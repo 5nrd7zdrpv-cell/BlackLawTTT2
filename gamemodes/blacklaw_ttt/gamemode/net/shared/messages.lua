@@ -5,6 +5,7 @@ BL.Net.Messages = {
   Snapshot = "blttt_snapshot",
   Event = "blttt_event",
   ClientEvent = "blttt_client_event",
+  Notice = "blttt_notice",
   ShopBuy = "blttt_shop_buy",
   ShopRadarPing = "blttt_shop_radar_ping",
   AdminRequest = "blttt_admin_request",

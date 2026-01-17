@@ -6,6 +6,8 @@ BL.HUD.State = BL.HUD.State or {
   last_event_count = 0,
   role_name = "Unknown",
   role_key = "UNKNOWN",
+  last_role_key = nil,
+  last_role_name = nil,
   phase = "LOBBY",
   round_id = 0,
   phase_end = nil,
@@ -182,6 +184,37 @@ local function is_event_log_enabled()
   return true
 end
 
+local function emit_toast(message, kind, duration)
+  if BL.UI and BL.UI.Toast and BL.UI.Toast.Show then
+    BL.UI.Toast.Show(message, kind or "info", duration or 4)
+  end
+end
+
+local function play_cue(name)
+  if BL.Audio and BL.Audio.PlayCue then
+    BL.Audio.PlayCue(name)
+  end
+end
+
+local function handle_event_feedback(event)
+  if type(event) ~= "table" then
+    return
+  end
+  local event_type = event.type
+  if type(event_type) ~= "string" then
+    return
+  end
+  local payload = type(event.payload) == "table" and event.payload or {}
+
+  if event_type == "round_win" then
+    local winner = payload.winner or "unbekannt"
+    emit_toast("Runde beendet: " .. winner, "info", 5)
+  elseif event_type == "phase_active" then
+    emit_toast("Runde gestartet", "info", 4)
+    play_cue("round_start")
+  end
+end
+
 function BL.HUD.RefreshState()
   local cache = BL.Net and BL.Net.Cache or nil
   local snapshot = BL.Net and BL.Net.GetSnapshot and BL.Net.GetSnapshot() or nil
@@ -211,6 +244,13 @@ function BL.HUD.RefreshState()
         state.role_name = "Unknown"
         state.role_key = "UNKNOWN"
       end
+
+      if state.role_key ~= "UNKNOWN" and state.role_key ~= (state.last_role_key or "") then
+        emit_toast("Rolle zugewiesen: " .. state.role_name, "success", 4)
+        play_cue("role_reveal_end")
+      end
+      state.last_role_key = state.role_key
+      state.last_role_name = state.role_name
 
       if type(snapshot.credits) == "number" then
         state.credits = math.max(0, math.floor(snapshot.credits))
@@ -271,6 +311,8 @@ function BL.HUD.RefreshState()
           end
         end
       end
+
+      handle_event_feedback(event)
     end
   end
 

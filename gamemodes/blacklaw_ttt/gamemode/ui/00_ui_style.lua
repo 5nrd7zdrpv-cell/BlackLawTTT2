@@ -19,6 +19,12 @@ end
 BL.UI.bl_ui_scale = bl_ui_scale
 
 function BL.UI.RefreshFonts()
+  local font_scale = BL.UI.bl_ui_scale(1)
+  if BL.UI.LastFontScale == font_scale then
+    return
+  end
+  BL.UI.LastFontScale = font_scale
+
   local scale = BL.UI.bl_ui_scale
   surface.CreateFont("BL.UI.Title", {
     font = "Inter",

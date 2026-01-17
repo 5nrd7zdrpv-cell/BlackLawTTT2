@@ -71,7 +71,11 @@ function BL.Net.SendSnapshot(ply)
 
   local snapshot = BL.State and BL.State.GetSnapshot and BL.State.GetSnapshot(ply) or {}
   net.Start(BL.Net.Messages.Snapshot)
-  net.WriteTable(snapshot)
+  if BL.Net.WriteCompressedTable then
+    BL.Net.WriteCompressedTable(snapshot)
+  else
+    net.WriteTable(snapshot)
+  end
   net.Send(ply)
 end
 
@@ -84,7 +88,11 @@ function BL.Net.BroadcastSnapshot()
     if IsValid(ply) then
       local snapshot = BL.State.GetSnapshot(ply) or {}
       net.Start(BL.Net.Messages.Snapshot)
-      net.WriteTable(snapshot)
+      if BL.Net.WriteCompressedTable then
+        BL.Net.WriteCompressedTable(snapshot)
+      else
+        net.WriteTable(snapshot)
+      end
       net.Send(ply)
     end
   end
@@ -108,6 +116,24 @@ function BL.Net.SendEvent(event)
   net.Start(BL.Net.Messages.Event)
   net.WriteTable(payload)
   net.Broadcast()
+end
+
+function BL.Net.SendNotice(ply, payload)
+  if not IsValid(ply) then
+    return
+  end
+  if type(payload) ~= "table" then
+    return
+  end
+
+  local notice_type = payload.type
+  if type(notice_type) ~= "string" or notice_type == "" then
+    return
+  end
+
+  net.Start(BL.Net.Messages.Notice)
+  net.WriteTable(payload)
+  net.Send(ply)
 end
 
 hook.Add("PlayerDisconnected", "BL.Net.RateLimitCleanup", function(ply)

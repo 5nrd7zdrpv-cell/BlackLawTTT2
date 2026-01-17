@@ -226,47 +226,47 @@ end
 
 function BL.Shop.TryPurchase(ply, item_id)
   if not IsValid(ply) then
-    return false
+    return false, "invalid_player"
   end
 
   local item = BL.Shop.GetItem(item_id)
   if not item then
-    return false
+    return false, "unknown_item"
   end
 
   local phase = get_round_phase()
   if phase ~= "PREP" and phase ~= "ACTIVE" then
-    return false
+    return false, "phase_locked"
   end
 
   if not ply:Alive() then
-    return false
+    return false, "dead"
   end
 
   local role_id = get_role_id(ply)
   if not role_allowed(item, role_id) then
-    return false
+    return false, "role_restricted"
   end
 
   if item.per_round_limit > 0 and get_round_count(item.id) >= item.per_round_limit then
-    return false
+    return false, "limit_reached"
   end
 
   if item.per_player_limit > 0 and get_player_count(ply, item.id) >= item.per_player_limit then
-    return false
+    return false, "limit_reached"
   end
 
   if not can_afford(ply, item.price) then
-    return false
+    return false, "no_credits"
   end
 
   if type(item.grant_fn) ~= "function" then
-    return false
+    return false, "grant_failed"
   end
 
   local granted = item.grant_fn(ply, item)
   if granted ~= true then
-    return false
+    return false, "grant_failed"
   end
 
   if BL.Credits and BL.Credits.Add then
@@ -275,7 +275,7 @@ function BL.Shop.TryPurchase(ply, item_id)
 
   increment_round_count(item.id)
   increment_player_count(ply, item.id)
-  return true
+  return true, "ok"
 end
 
 local function apply_armor(ply, amount, max)
@@ -446,7 +446,7 @@ BL.Shop.Register({
   end,
 })
 
-hook.Add("Think", "BL.Shop.RadarThink", function()
+local function radar_tick()
   if not BL.Net or not BL.Net.Messages or not BL.Net.Messages.ShopRadarPing then
     return
   end
@@ -482,4 +482,9 @@ hook.Add("Think", "BL.Shop.RadarThink", function()
       end
     end
   end
+end
+
+hook.Add("Initialize", "BL.Shop.RadarTimer", function()
+  timer.Remove("BL.Shop.RadarThink")
+  timer.Create("BL.Shop.RadarThink", 0.5, 0, radar_tick)
 end)
