@@ -291,6 +291,9 @@ local function end_round(reason, winner)
     reason = reason,
     round_id = BL.RoundManager.State.last_summary.round_id,
   })
+  if BL.PlayerStats and BL.PlayerStats.RecordRoundEnd then
+    BL.PlayerStats.RecordRoundEnd(winner)
+  end
   reveal_roles()
   BL.RoundManager.SetPhase(PHASES.POST)
   push_event("round_summary", BL.RoundManager.State.last_summary)

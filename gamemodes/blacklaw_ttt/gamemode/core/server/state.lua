@@ -51,6 +51,46 @@ local function is_player_alive(ply)
   return ply:Alive()
 end
 
+local function is_admin(ply)
+  if not IsValid(ply) then
+    return false
+  end
+  if ply.IsSuperAdmin and ply:IsSuperAdmin() then
+    return true
+  end
+  if ply.IsAdmin and ply:IsAdmin() then
+    return true
+  end
+  return false
+end
+
+local function get_persistent_stats(viewer, target)
+  if not IsValid(target) then
+    return nil
+  end
+  if not IsValid(viewer) then
+    return nil
+  end
+  if viewer ~= target and not is_admin(viewer) then
+    return nil
+  end
+  if not BL.PlayerStats or not BL.PlayerStats.Get then
+    return nil
+  end
+  local stats = BL.PlayerStats.Get(target)
+  if type(stats) ~= "table" then
+    return nil
+  end
+  return {
+    kills = stats.kills or 0,
+    deaths = stats.deaths or 0,
+    rounds = stats.rounds or 0,
+    wins_inno = stats.wins_inno or 0,
+    wins_traitor = stats.wins_traitor or 0,
+    last_seen = stats.last_seen or 0,
+  }
+end
+
 local function should_reveal_role(viewer, target, phase)
   if phase == "POST" then
     return true
@@ -91,6 +131,7 @@ local function build_players_summary(viewer, phase)
     local role_id = reveal and get_role_for_player(ply) or 0
     local role_key = reveal and (BL.Roles and BL.Roles.GetRoleKey and BL.Roles.GetRoleKey(role_id) or "") or ""
     local role_name = reveal and (BL.Roles and BL.Roles.GetRoleName and BL.Roles.GetRoleName(role_id) or "") or ""
+    local persistent_stats = get_persistent_stats(viewer, ply)
     summary[#summary + 1] = {
       steamid64 = ply:SteamID64(),
       name = ply:Nick(),
@@ -103,6 +144,7 @@ local function build_players_summary(viewer, phase)
       role_id = role_id,
       role_key = role_key,
       role_name = role_name,
+      stats = persistent_stats,
     }
   end
   return summary
