@@ -106,7 +106,11 @@ local function send_admin_snapshot(ply)
   end
   local snapshot = BL.Admin.BuildSnapshot(ply)
   net.Start(BL.Net.Messages.AdminSnapshot)
-  net.WriteTable(snapshot)
+  if BL.Net and BL.Net.WriteCompressedTable then
+    BL.Net.WriteCompressedTable(snapshot)
+  else
+    net.WriteTable(snapshot)
+  end
   net.Send(ply)
 end
 

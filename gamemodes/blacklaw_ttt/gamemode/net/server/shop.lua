@@ -26,5 +26,15 @@ BL.Net.Receive(BL.Net.Messages.ShopBuy, { limit = 4, interval = 1 }, function(_l
     return
   end
 
-  BL.Shop.TryPurchase(ply, item_id)
+  local success, reason = BL.Shop.TryPurchase(ply, item_id)
+  local item = BL.Shop.GetItem and BL.Shop.GetItem(item_id) or nil
+  if BL.Net and BL.Net.SendNotice then
+    BL.Net.SendNotice(ply, {
+      type = "shop_purchase",
+      success = success == true,
+      reason = reason or "unknown",
+      item_id = item_id,
+      item_name = item and item.name or "",
+    })
+  end
 end)
