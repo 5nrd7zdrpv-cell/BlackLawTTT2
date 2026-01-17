@@ -13,6 +13,7 @@ const state = {
   players: [],
   roles: new Map(),
   phase: "Tag",
+  events: [],
 };
 
 const rolePool = {
@@ -20,10 +21,18 @@ const rolePool = {
   traitor: { name: "Verräter", description: "Täuscht die Gruppe und stiftet Chaos." },
 };
 
+const renderEventLog = () => {
+  eventLog.innerHTML = "";
+  [...state.events].reverse().forEach((message) => {
+    const entry = document.createElement("li");
+    entry.textContent = message;
+    eventLog.appendChild(entry);
+  });
+};
+
 const logEvent = (message) => {
-  const entry = document.createElement("li");
-  entry.textContent = message;
-  eventLog.prepend(entry);
+  state.events.push(message);
+  renderEventLog();
 };
 
 const renderPlayers = () => {
@@ -124,9 +133,9 @@ const resetGame = () => {
   state.players = [];
   state.roles.clear();
   state.phase = "Tag";
+  state.events = [];
   statusText.textContent = "Warte auf Spieler";
   phaseStatus.textContent = state.phase;
-  eventLog.innerHTML = "";
   renderPlayers();
   renderRoles();
   logEvent("Spiel zurückgesetzt.");
