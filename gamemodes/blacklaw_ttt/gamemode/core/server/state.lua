@@ -172,6 +172,7 @@ function BL.State.GetSnapshot(ply)
     alive_counts = build_alive_counts(),
     event_log = copy_event_log(),
     post_round_summary = copy_post_round_summary(),
+    credits = BL.Credits and BL.Credits.Get and BL.Credits.Get(ply) or 0,
   }
 end
 
