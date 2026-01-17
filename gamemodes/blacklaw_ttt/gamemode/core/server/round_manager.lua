@@ -360,6 +360,9 @@ function BL.RoundManager.SetPhase(phase)
   elseif phase == PHASES.PREP then
     BL.RoundManager.State.next_phase_time = CurTime() + get_int("bl_prep_time", 30)
     game.CleanUpMap()
+    if BL.Karma and BL.Karma.ResetAll then
+      BL.Karma.ResetAll()
+    end
     for _, ply in ipairs(player.GetAll()) do
       if IsValid(ply) then
         ply.BLTTT_LateJoiner = false
