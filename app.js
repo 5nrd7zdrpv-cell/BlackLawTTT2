@@ -15,11 +15,10 @@ const state = {
   phase: "Tag",
 };
 
-const rolePool = [
-  { name: "Innocent", description: "Versucht zu überleben." },
-  { name: "Traitor", description: "Sabotiert die Gruppe." },
-  { name: "Detective", description: "Findet Hinweise." },
-];
+const rolePool = {
+  innocent: { name: "Unschuldiger", description: "Versucht zu überleben." },
+  traitor: { name: "Verräter", description: "Täuscht die Gruppe und stiftet Chaos." },
+};
 
 const logEvent = (message) => {
   const entry = document.createElement("li");
@@ -83,22 +82,31 @@ const shuffle = (items) => {
   return copy;
 };
 
+const getTraitorCount = (playerCount) => {
+  if (playerCount < 3) {
+    return 0;
+  }
+  const calculated = Math.max(1, Math.floor(playerCount / 4));
+  return Math.min(calculated, playerCount - 1);
+};
+
 const assignRoles = () => {
   state.roles.clear();
   const shuffledPlayers = shuffle(state.players);
-  const roleDistribution = shuffledPlayers.map((player, index) => {
-    if (index === 0 && shuffledPlayers.length >= 3) {
-      return { player, role: rolePool[2] };
-    }
-    if (index === 1 && shuffledPlayers.length >= 4) {
-      return { player, role: rolePool[1] };
-    }
-    return { player, role: rolePool[0] };
-  });
+  const traitorCount = getTraitorCount(shuffledPlayers.length);
+  const roleDistribution = shuffledPlayers.map((player, index) => ({
+    player,
+    role: index < traitorCount ? rolePool.traitor : rolePool.innocent,
+  }));
 
   roleDistribution.forEach(({ player, role }) => {
     state.roles.set(player, role);
   });
+
+  const innocentCount = shuffledPlayers.length - traitorCount;
+  logEvent(
+    `Rollen verteilt: ${traitorCount} Verräter, ${innocentCount} Unschuldige.`,
+  );
 };
 
 const startGame = () => {
