@@ -6,7 +6,14 @@ BL.UI.Style = BL.UI.Style or {}
 local function bl_ui_scale(value)
   local base_height = 1080
   local scale = math.max(ScrH() / base_height, 0.75)
-  return math.floor(value * scale + 0.5)
+  local ui_scale = 1
+  if GM and GM.BLTTT and GM.BLTTT.GetConfigValue then
+    local config_scale = GM.BLTTT.GetConfigValue("Client", "bl_ui_scale")
+    if type(config_scale) == "number" then
+      ui_scale = math.Clamp(config_scale, 0.5, 2)
+    end
+  end
+  return math.floor(value * scale * ui_scale + 0.5)
 end
 
 BL.UI.bl_ui_scale = bl_ui_scale
@@ -47,6 +54,27 @@ function BL.UI.RefreshFonts()
     weight = 600,
     extended = true
   })
+
+  surface.CreateFont("BL.UI.HUDValue", {
+    font = "Inter",
+    size = scale(24),
+    weight = 700,
+    extended = true
+  })
+
+  surface.CreateFont("BL.UI.HUDLabel", {
+    font = "Inter",
+    size = scale(12),
+    weight = 600,
+    extended = true
+  })
+
+  surface.CreateFont("BL.UI.HUDTimer", {
+    font = "Inter",
+    size = scale(26),
+    weight = 700,
+    extended = true
+  })
 end
 
 function BL.UI.RefreshStyle()
@@ -73,7 +101,10 @@ function BL.UI.RefreshStyle()
     Heading = "BL.UI.Heading",
     Body = "BL.UI.Body",
     Label = "BL.UI.Label",
-    Button = "BL.UI.Button"
+    Button = "BL.UI.Button",
+    HUDValue = "BL.UI.HUDValue",
+    HUDLabel = "BL.UI.HUDLabel",
+    HUDTimer = "BL.UI.HUDTimer"
   }
 
   BL.UI.Style.Colors = {
