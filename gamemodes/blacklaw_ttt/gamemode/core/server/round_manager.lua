@@ -363,6 +363,9 @@ function BL.RoundManager.SetPhase(phase)
     if BL.Karma and BL.Karma.ResetAll then
       BL.Karma.ResetAll()
     end
+    if BL.RoundStats and BL.RoundStats.ResetAll then
+      BL.RoundStats.ResetAll()
+    end
     for _, ply in ipairs(player.GetAll()) do
       if IsValid(ply) then
         ply.BLTTT_LateJoiner = false
