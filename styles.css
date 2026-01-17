@@ -138,20 +138,40 @@ button.primary:hover {
   gap: 8px;
 }
 
-.player-list li {
+.player-row {
   padding: 10px 12px;
   border-radius: 10px;
   background: rgba(123, 166, 255, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  transition: border 0.2s ease, background 0.2s ease;
+  border: 1px solid transparent;
 }
 
-.player-list button {
+.player-row.is-active {
+  background: rgba(123, 166, 255, 0.2);
+  border-color: rgba(123, 166, 255, 0.6);
+}
+
+.player-select {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-weight: 600;
+  text-align: left;
+  flex: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.player-remove {
   background: transparent;
   border: none;
   color: #ff7b7b;
   font-weight: 600;
+  cursor: pointer;
 }
 
 .player-actions {
@@ -201,6 +221,116 @@ button.primary:hover {
   font-size: 0.95rem;
 }
 
+.player-view {
+  display: grid;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.player-view::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(49, 176, 153, 0.12), transparent 55%);
+  pointer-events: none;
+}
+
+.player-view__header,
+.player-view__profile,
+.player-view__actions {
+  position: relative;
+  z-index: 1;
+}
+
+.player-view__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.player-view__status {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(49, 176, 153, 0.2);
+  color: #8bf5df;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.player-view__profile {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.player-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  background: linear-gradient(140deg, rgba(123, 166, 255, 0.9), rgba(49, 176, 153, 0.8));
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+}
+
+.player-name {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.player-role {
+  margin: 6px 0 0;
+  color: #9aa7bd;
+  font-weight: 600;
+}
+
+.player-role-description {
+  margin: 6px 0 0;
+  color: #9aa7bd;
+  font-size: 0.9rem;
+}
+
+.player-view__stats {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  position: relative;
+  z-index: 1;
+}
+
+.stat-card {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(15, 21, 34, 0.8);
+  border: 1px solid rgba(123, 166, 255, 0.2);
+}
+
+.stat-card p {
+  margin: 0;
+  color: #9aa7bd;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.stat-card strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.1rem;
+}
+
+.player-view__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 720px) {
   .header {
     flex-direction: column;
@@ -209,6 +339,12 @@ button.primary:hover {
 
   .player-form {
     flex-direction: column;
+  }
+
+  .player-view__header,
+  .player-view__profile {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   button {
