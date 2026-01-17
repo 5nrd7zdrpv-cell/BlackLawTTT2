@@ -18,13 +18,10 @@ BL.State.Data = BL.State.Data or {
 }
 
 local function get_role_for_player(ply)
-  if ply.BLTTT_Role ~= nil then
-    return ply.BLTTT_Role
+  if ply.BLTTT_RoleId ~= nil then
+    return ply.BLTTT_RoleId
   end
-  if ply.GetNWString then
-    return ply:GetNWString("blttt_role", "")
-  end
-  return ""
+  return 0
 end
 
 local function get_role_flag(ply, key)
@@ -51,15 +48,32 @@ local function is_player_alive(ply)
   return ply:Alive()
 end
 
-local function build_players_summary()
+local function should_reveal_role(viewer, target, phase)
+  if phase == "POST" then
+    return true
+  end
+  if not IsValid(viewer) or not IsValid(target) then
+    return false
+  end
+  return viewer == target
+end
+
+local function build_players_summary(viewer, phase)
   local summary = {}
   for _, ply in ipairs(player.GetAll()) do
+    local reveal = should_reveal_role(viewer, ply, phase)
+    local role_id = reveal and get_role_for_player(ply) or 0
+    local role_key = reveal and (BL.Roles and BL.Roles.GetRoleKey and BL.Roles.GetRoleKey(role_id) or "") or ""
+    local role_name = reveal and (BL.Roles and BL.Roles.GetRoleName and BL.Roles.GetRoleName(role_id) or "") or ""
     summary[#summary + 1] = {
       steamid64 = ply:SteamID64(),
       name = ply:Nick(),
       alive = is_player_alive(ply),
       role_revealed = get_role_flag(ply, "RoleRevealed"),
       role_public = get_role_flag(ply, "RolePublic"),
+      role_id = role_id,
+      role_key = role_key,
+      role_name = role_name,
     }
   end
   return summary
@@ -69,10 +83,11 @@ local function build_role_counts()
   local counts = {}
   for _, ply in ipairs(player.GetAll()) do
     local role = get_role_for_player(ply)
-    if role == nil or role == "" then
-      role = "unknown"
+    local key = BL.Roles and BL.Roles.GetRoleKey and BL.Roles.GetRoleKey(role) or ""
+    if key == "" then
+      key = "UNKNOWN"
     end
-    counts[role] = (counts[role] or 0) + 1
+    counts[key] = (counts[key] or 0) + 1
   end
   return counts
 end
@@ -105,12 +120,13 @@ local function copy_event_log()
   return copy
 end
 
-function BL.State.GetSnapshot(_ply)
+function BL.State.GetSnapshot(ply)
+  local phase = BL.State.Data.phase
   return {
-    phase = BL.State.Data.phase,
+    phase = phase,
     round_id = BL.State.Data.round_id,
     phase_start = BL.State.Data.phase_start,
-    players_summary = build_players_summary(),
+    players_summary = build_players_summary(ply, phase),
     role_counts = build_role_counts(),
     alive_counts = build_alive_counts(),
     event_log = copy_event_log(),

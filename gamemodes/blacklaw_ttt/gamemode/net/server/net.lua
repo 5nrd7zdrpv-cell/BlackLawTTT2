@@ -76,10 +76,18 @@ function BL.Net.SendSnapshot(ply)
 end
 
 function BL.Net.BroadcastSnapshot()
-  local snapshot = BL.State and BL.State.GetSnapshot and BL.State.GetSnapshot(nil) or {}
-  net.Start(BL.Net.Messages.Snapshot)
-  net.WriteTable(snapshot)
-  net.Broadcast()
+  if not BL.State or not BL.State.GetSnapshot then
+    return
+  end
+
+  for _, ply in ipairs(player.GetAll()) do
+    if IsValid(ply) then
+      local snapshot = BL.State.GetSnapshot(ply) or {}
+      net.Start(BL.Net.Messages.Snapshot)
+      net.WriteTable(snapshot)
+      net.Send(ply)
+    end
+  end
 end
 
 function BL.Net.SendEvent(event)
